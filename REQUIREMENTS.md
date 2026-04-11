@@ -3,16 +3,16 @@
 **Designer:** Desmond Bolia  
 **Revision:** v0.1  
 **Date:** April 11, 2026  
-**Reference Design:** Pixhawk 6C (Holybro)
+**Reference Design:** Pixhawk 6C (Holybro) — adapted for STM32F405
 
 ---
 
 ## 1. Mission Context
 
-This board is designed for autonomous quadcopter operation in GPS-available 
-and GPS-degraded environments. It is derived from the author's senior capstone 
-project — a fiber-optic-tethered autonomous UAV with onboard AI inference and 
-MAVLink telemetry — and targets ArduPilot/PX4 firmware compatibility.
+This board is designed for autonomous quadcopter operation in GPS-available
+and GPS-degraded environments. It is derived from my senior capstone
+project — a fiber-optic-tethered autonomous UAV with onboard AI inference and
+MAVLink telemetry — and targets ArduPilot firmware compatibility.
 
 ---
 
@@ -32,13 +32,16 @@ MAVLink telemetry — and targets ArduPilot/PX4 firmware compatibility.
 
 | Parameter | Selection | Rationale |
 |---|---|---|
-| MCU | STM32F405RGT6 | Well-documented, ArduPilot native, QFP64 hand-solderable |
+| MCU | STM32F405RGT6 | ArduPilot native, LQFP64 hand-solderable |
 | Core | ARM Cortex-M4 @ 168MHz | Sufficient for flight control loop |
 | Flash | 1MB | Fits ArduPilot firmware |
 | Package | LQFP64 | Hand-solderable, widely available |
 
-*Note: STM32H743 used in Pixhawk 6C — selected F405 for reduced complexity 
-on first PCB design iteration.*
+Peripherals verified against STM32F405RGT6 datasheet DS8626 Rev 11:
+4x USART, 2x UART, 3x SPI, 3x I2C, 1x USB OTG FS.
+
+Note: Pixhawk 6C uses STM32H743. STM32F405 selected for reduced complexity
+on first PCB design iteration with full ArduPilot support.
 
 ---
 
@@ -47,7 +50,7 @@ on first PCB design iteration.*
 | Sensor | Interface | Function |
 |---|---|---|
 | ICM-42688-P | SPI1 | Primary IMU (accel + gyro) |
-| BMP388 | I2C | Barometric altimeter |
+| BMP388 | I2C1 | Barometric altimeter |
 
 ---
 
@@ -58,9 +61,11 @@ on first PCB design iteration.*
 | SPI1 | ICM-42688-P | — | IMU data |
 | USART1 | GPS | JST-GH 6-pin | GPS module |
 | USART2 | Telemetry | JST-GH 6-pin | MAVLink / GCS |
-| USART3 | Debug | Header | Firmware debug |
+| USART3 | Debug | 4-pin header | Firmware debug |
 | I2C1 | BMP388 | — | Barometer |
-| USB | OTG-FS | USB-C | Firmware flashing, config |
+| USB OTG-FS | — | USB-C | Firmware flashing, config |
+
+Remaining peripherals (USART6, UART4, UART5) reserved for future revisions.
 
 ---
 
@@ -98,10 +103,11 @@ on first PCB design iteration.*
 ## 9. Design Constraints
 
 - Hand-solderable components only (no BGA packages)
+- ICM-42688-P requires stencil and solder paste (LGA package)
 - All ICs available on DigiKey or Mouser
 - IMU placed at geometric center of board
 - SPI traces kept under 50mm, length-matched within 2mm
-- Power and signal ground poured separately, joined at single star point
+- Power and signal grounds poured separately, joined at single star point
 
 ---
 
@@ -111,3 +117,4 @@ on first PCB design iteration.*
 - Magnetometer
 - Blackbox flash storage
 - Redundant IMU
+- USART6, UART4, UART5 breakouts
